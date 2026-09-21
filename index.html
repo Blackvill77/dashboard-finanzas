@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -221,13 +221,86 @@
             font-weight: 700;
         }
 
-        .alert {
-            background: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid var(--color-success);
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--color-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--color-info);
+        }
+
+        .timeline-item.urgent {
+            border-left-color: var(--color-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .timeline-item.soon {
+            border-left-color: var(--color-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-info);
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .timeline-item.urgent .timeline-dot {
+            background: var(--color-danger);
+        }
+
+        .timeline-item.soon .timeline-dot {
+            background: var(--color-warning);
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-date {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+
+        .timeline-name {
+            font-weight: 600;
+            color: var(--color-text);
+            margin-top: 2px;
+        }
+
+        .timeline-amount {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--color-danger);
+            margin-top: 4px;
+        }
+
+        .days-remaining {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--color-info);
+            color: white;
+            font-weight: 600;
+        }
+
+        .days-remaining.urgent {
+            background: var(--color-danger);
+        }
+
+        .days-remaining.soon {
+            background: var(--color-warning);
         }
 
         @media (max-width: 768px) {
@@ -302,18 +375,27 @@
             </div>
         </div>
 
-        <!-- SUSCRIPCIONES MENSUALES -->
+        <!-- SUSCRIPCIONES MENSUALES CON FECHAS -->
         <div class="section">
             <h2 class="section-title">🎬 Suscripciones Mensuales</h2>
             <div class="input-group">
                 <input type="text" id="nombreSuscripcion" placeholder="Nombre (ej: Netflix)">
                 <input type="number" id="montoSuscripcion" placeholder="Monto mensual" step="0.01">
+                <input type="date" id="fechaSuscripcion" placeholder="Fecha de pago">
                 <button onclick="agregarSuscripcion()">Agregar Suscripción</button>
             </div>
             <div id="listaSuscripciones" style="margin-top: 20px;"></div>
             <div class="summary-card" style="margin-top: 20px;">
                 <div class="summary-label">Total Suscripciones Mensuales</div>
                 <div class="summary-value negative" id="totalSuscripciones">$0</div>
+            </div>
+        </div>
+
+        <!-- CALENDARIO DE PAGOS -->
+        <div class="section">
+            <h2 class="section-title">📅 Calendario de Próximos Pagos</h2>
+            <div class="timeline" id="timelinePagos">
+                <p style="color: var(--color-text-muted); text-align: center;">Agrega suscripciones para ver el calendario</p>
             </div>
         </div>
 
@@ -350,8 +432,8 @@
             <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-top: 12px;">
                 <strong>Cómo sincronizar entre dispositivos:</strong><br>
                 1. En tu compu: Click "Exportar Datos" → se descarga un archivo JSON<br>
-                2. En tu celular: Abre el archivo JSON descargado, copia el contenido<br>
-                3. En tu celular: Click "Importar Datos" → pega el contenido<br>
+                2. En tu celular: Abre el archivo JSON descargado<br>
+                3. En tu celular: Click "Importar Datos" → pega o selecciona el contenido<br>
                 <br>
                 O más fácil: Si usas Chrome en ambos dispositivos con la misma cuenta Google, los datos se sincronizan automáticamente.
             </p>
@@ -433,21 +515,44 @@
         function agregarSuscripcion() {
             const nombre = document.getElementById('nombreSuscripcion').value;
             const monto = parseFloat(document.getElementById('montoSuscripcion').value) || 0;
+            const fecha = document.getElementById('fechaSuscripcion').value;
             
-            if (!nombre || monto <= 0) {
-                alert('Ingresa nombre y monto válido');
+            if (!nombre || monto <= 0 || !fecha) {
+                alert('Ingresa nombre, monto y fecha de pago');
                 return;
             }
             
-            estado.suscripciones.push({ nombre, monto, id: Date.now() });
+            estado.suscripciones.push({ nombre, monto, fecha, id: Date.now() });
             document.getElementById('nombreSuscripcion').value = '';
             document.getElementById('montoSuscripcion').value = '';
+            document.getElementById('fechaSuscripcion').value = '';
             guardarDatos();
         }
 
         function eliminarSuscripcion(id) {
             estado.suscripciones = estado.suscripciones.filter(s => s.id !== id);
             guardarDatos();
+        }
+
+        function calcularDiasRestantes(fecha) {
+            const hoy = new Date();
+            const [año, mes, dia] = fecha.split('-');
+            const fechaPago = new Date(año, mes - 1, dia);
+            
+            // Si la fecha ya pasó este mes, calcular para el próximo mes
+            if (fechaPago < hoy) {
+                fechaPago.setMonth(fechaPago.getMonth() + 1);
+            }
+            
+            const diferencia = fechaPago - hoy;
+            const dias = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+            return dias;
+        }
+
+        function formatearFecha(fecha) {
+            const [año, mes, dia] = fecha.split('-');
+            const date = new Date(año, mes - 1, dia);
+            return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
         }
 
         function actualizarUI() {
@@ -500,7 +605,7 @@
             estado.suscripciones.forEach(suscripcion => {
                 suscripcionesHTML += `
                     <div class="list-item">
-                        <span>${suscripcion.nombre}</span>
+                        <span>${suscripcion.nombre} <span style="color: var(--color-text-muted); font-size: 0.75rem;">(${formatearFecha(suscripcion.fecha)})</span></span>
                         <div>
                             <span class="list-item-value">$${suscripcion.monto.toFixed(2)}/mes</span>
                             <button class="danger" onclick="eliminarSuscripcion(${suscripcion.id})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.75rem;">✕</button>
@@ -510,6 +615,9 @@
             });
             document.getElementById('listaSuscripciones').innerHTML = suscripcionesHTML || '<p style="color: var(--color-text-muted);">Sin suscripciones registradas</p>';
 
+            // Actualizar calendario de pagos
+            actualizarCalendarioPagos();
+
             // Resumen
             const totalEgresos = totalDeudas + totalSuscripciones;
             const disponible = estado.saldo + totalIngresos - totalEgresos;
@@ -518,6 +626,53 @@
             const disponibleEl = document.getElementById('resumenDisponible');
             disponibleEl.textContent = `$${disponible.toFixed(2)}`;
             disponibleEl.className = 'summary-value ' + (disponible >= 0 ? 'positive' : 'negative');
+        }
+
+        function actualizarCalendarioPagos() {
+            if (estado.suscripciones.length === 0) {
+                document.getElementById('timelinePagos').innerHTML = '<p style="color: var(--color-text-muted); text-align: center;">Agrega suscripciones para ver el calendario</p>';
+                return;
+            }
+
+            // Ordenar por días restantes
+            const pagosOrdenados = estado.suscripciones
+                .map(s => ({
+                    ...s,
+                    diasRestantes: calcularDiasRestantes(s.fecha)
+                }))
+                .sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+            let timelineHTML = '';
+            pagosOrdenados.forEach(pago => {
+                const urgente = pago.diasRestantes <= 3;
+                const pronto = pago.diasRestantes <= 7;
+                const clase = urgente ? 'urgent' : (pronto ? 'soon' : '');
+                
+                let badge = `<span class="days-remaining ${clase}">${pago.diasRestantes} días</span>`;
+                if (pago.diasRestantes === 0) {
+                    badge = `<span class="days-remaining urgent">¡Hoy!</span>`;
+                } else if (pago.diasRestantes === 1) {
+                    badge = `<span class="days-remaining urgent">Mañana</span>`;
+                }
+
+                timelineHTML += `
+                    <div class="timeline-item ${clase}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div class="timeline-date">${formatearFecha(pago.fecha)}</div>
+                                    <div class="timeline-name">${pago.nombre}</div>
+                                    <div class="timeline-amount">$${pago.monto.toFixed(2)}</div>
+                                </div>
+                                ${badge}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('timelinePagos').innerHTML = timelineHTML;
         }
 
         function exportarDatos() {
