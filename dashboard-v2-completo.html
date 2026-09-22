@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financiero - Roberto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-info: #3b82f6;
+            --color-neutral: #6b7280;
+            --color-bg: #f9fafb;
+            --color-surface: #ffffff;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-muted: #6b7280;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg: #111827;
+                --color-surface: #1f2937;
+                --color-border: #374151;
+                --color-text: #f3f4f6;
+                --color-text-muted: #d1d5db;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--color-info), var(--color-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--color-text);
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        input, select {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 0.875rem;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: var(--color-info);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button.danger {
+            background: var(--color-danger);
+        }
+
+        button.danger:hover {
+            background: #dc2626;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--color-bg);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .summary-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        /* TABLA DE PAGOS */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--color-surface);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: var(--color-info);
+            color: white;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border-top: 1px solid var(--color-border);
+            font-size: 0.875rem;
+        }
+
+        tr:hover {
+            background: var(--color-bg);
+        }
+
+        .pago-nombre {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .pago-monto {
+            font-weight: 700;
+            color: var(--color-danger);
+        }
+
+        .pago-fecha {
+            color: var(--color-text-muted);
+        }
+
+        .pago-dias {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            background: var(--color-info);
+            color: white;
+        }
+
+        .pago-dias.urgent {
+            background: var(--color-danger);
+        }
+
+        .pago-dias.soon {
+            background: var(--color-warning);
+        }
+
+        /* CALENDARIO */
+        .calendar-container {
+            background: var(--color-surface);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-nav button {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 8px;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-bg);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--color-info);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.4;
+        }
+
+        .calendar-day.has-payment {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--color-info);
+            font-weight: 600;
+        }
+
+        .calendar-day.has-payment.urgent {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--color-danger);
+        }
+
+        .calendar-payment-indicator {
+            position: absolute;
+            bottom: 2px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--color-info);
+        }
+
+        .calendar-payment-indicator.urgent {
+            background: var(--color-danger);
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.75rem;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .calendar-days {
+                gap: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Mi Dashboard Financiero</h1>
+            <button class="danger" onclick="borrarTodo()" style="margin-top: 12px;">🗑️ Borrar Todos los Datos</button>
+        </header>
+
+        <!-- SALDO ACTUAL -->
+        <div class="section">
+            <h2 class="section-title">Saldo Actual</h2>
+            <div class="input-group">
+                <input type="number" id="saldoInput" placeholder="$0" step="0.01">
+                <button onclick="setSaldo()">Establecer Saldo</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="summary-card">
+                    <div class="summary-label">Saldo Disponible</div>
+                    <div class="summary-value positive" id="saldoDisplay">$0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INGRESOS -->
+        <div class="section">
+            <h2 class="section-title">💵 Registro de Ingresos</h2>
+            <div class="input-group">
+                <select id="tipoIngreso">
+                    <option value="">Selecciona tipo</option>
+                    <option value="Starbucks Quincena">Starbucks Quincena</option>
+                    <option value="Propinas">Propinas</option>
+                    <option value="Préstamo Cliente 1">Préstamo Cliente 1</option>
+                    <option value="Préstamo Cliente 2">Préstamo Cliente 2</option>
+                    <option value="Ingresos Variables">Ingresos Variables</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <input type="number" id="montoIngreso" placeholder="Monto" step="0.01">
+                <button onclick="agregarIngreso()">Agregar Ingreso</button>
+            </div>
+            <div id="listaIngresos" style="margin-top: 20px;"></div>
+            <div class="summary-card" style="margin-top: 20px;">
+                <div class="summary-label">Total Ingresos</div>
+                <div class="summary-value positive" id="totalIngresos">$0</div>
+            </div>
+        </div>
+
+        <!-- SUSCRIPCIONES -->
+        <div class="section">
+            <h2 class="section-title">🎬 Suscripciones Mensuales</h2>
+            <div class="input-group">
+                <input type="text" id="nombreSuscripcion" placeholder="Nombre (ej: Netflix)">
+                <input type="number" id="montoSuscripcion" placeholder="Monto" step="0.01">
+                <input type="date" id="fechaSuscripcion">
+                <button onclick="agregarSuscripcion()">Agregar Suscripción</button>
+            </div>
+            <div id="listaSuscripciones" style="margin-top: 20px;"></div>
+            <div class="summary-card" style="margin-top: 20px;">
+                <div class="summary-label">Total Suscripciones</div>
+                <div class="summary-value negative" id="totalSuscripciones">$0</div>
+            </div>
+        </div>
+
+        <!-- TABLA DE PAGOS (OPCIÓN A) -->
+        <div class="section">
+            <h2 class="section-title">📋 Tabla de Pagos Detallada</h2>
+            <table id="tablaPagos">
+                <thead>
+                    <tr>
+                        <th>Servicio</th>
+                        <th>Monto</th>
+                        <th>Fecha de Pago</th>
+                        <th>Días Restantes</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaPagosBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--color-text-muted);">Agrega suscripciones para ver los pagos</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CALENDARIO (OPCIÓN C) -->
+        <div class="section">
+            <h2 class="section-title">📅 Calendario de Pagos</h2>
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 id="calendarMes">Septiembre 2026</h3>
+                    <div class="calendar-nav">
+                        <button onclick="mesAnterior()">← Anterior</button>
+                        <button onclick="mesSiguiente()">Siguiente →</button>
+                    </div>
+                </div>
+                <div class="calendar-weekdays">
+                    <div class="calendar-weekday">Dom</div>
+                    <div class="calendar-weekday">Lun</div>
+                    <div class="calendar-weekday">Mar</div>
+                    <div class="calendar-weekday">Mié</div>
+                    <div class="calendar-weekday">Jue</div>
+                    <div class="calendar-weekday">Vie</div>
+                    <div class="calendar-weekday">Sab</div>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" style="display:none;" accept=".json">
+
+    <script>
+        let estado = {
+            saldo: 0,
+            ingresos: [],
+            suscripciones: []
+        };
+
+        let mesActual = new Date().getMonth();
+        let añoActual = new Date().getFullYear();
+
+        function cargarDatos() {
+            const datos = localStorage.getItem('financiasDashboard');
+            if (datos) {
+                try {
+                    const parsed = JSON.parse(datos);
+                    estado.saldo = typeof parsed.saldo === 'number' ? parsed.saldo : 0;
+                    // Se descartan automáticamente registros con formato inválido o incompleto
+                    estado.ingresos = (parsed.ingresos || []).filter(i =>
+                        i && typeof i.monto === 'number' && i.tipo
+                    );
+                    estado.suscripciones = (parsed.suscripciones || []).filter(s =>
+                        s && typeof s.monto === 'number' && s.nombre && /^\d{4}-\d{2}-\d{2}$/.test(s.fecha || '')
+                    );
+                } catch (e) {
+                    estado = { saldo: 0, ingresos: [], suscripciones: [] };
+                }
+                actualizarUI();
+            }
+        }
+
+        function guardarDatos() {
+            localStorage.setItem('financiasDashboard', JSON.stringify(estado));
+            actualizarUI();
+        }
+
+        function borrarTodo() {
+            if (confirm('¿Seguro que quieres borrar todos los datos (saldo, ingresos y suscripciones)? Esta acción no se puede deshacer.')) {
+                estado = { saldo: 0, ingresos: [], suscripciones: [] };
+                localStorage.removeItem('financiasDashboard');
+                actualizarUI();
+            }
+        }
+
+        function setSaldo() {
+            estado.saldo = parseFloat(document.getElementById('saldoInput').value) || 0;
+            document.getElementById('saldoInput').value = '';
+            guardarDatos();
+        }
+
+        function agregarIngreso() {
+            const tipo = document.getElementById('tipoIngreso').value;
+            const monto = parseFloat(document.getElementById('montoIngreso').value) || 0;
+            if (!tipo || monto <= 0) {
+                alert('Ingresa datos válidos');
+                return;
+            }
+            estado.ingresos.push({ tipo, monto, id: Date.now() });
+            estado.saldo += monto;
+            document.getElementById('tipoIngreso').value = '';
+            document.getElementById('montoIngreso').value = '';
+            guardarDatos();
+        }
+
+        function eliminarIngreso(id) {
+            const ingreso = estado.ingresos.find(i => i.id === id);
+            if (ingreso) {
+                estado.saldo -= ingreso.monto;
+            }
+            estado.ingresos = estado.ingresos.filter(i => i.id !== id);
+            guardarDatos();
+        }
+
+        function agregarSuscripcion() {
+            const nombre = document.getElementById('nombreSuscripcion').value;
+            const monto = parseFloat(document.getElementById('montoSuscripcion').value) || 0;
+            const fecha = document.getElementById('fechaSuscripcion').value;
+            if (!nombre || monto <= 0 || !fecha) {
+                alert('Ingresa todos los datos');
+                return;
+            }
+            estado.suscripciones.push({ nombre, monto, fecha, id: Date.now() });
+            document.getElementById('nombreSuscripcion').value = '';
+            document.getElementById('montoSuscripcion').value = '';
+            document.getElementById('fechaSuscripcion').value = '';
+            guardarDatos();
+        }
+
+        function eliminarSuscripcion(id) {
+            estado.suscripciones = estado.suscripciones.filter(s => s.id !== id);
+            guardarDatos();
+        }
+
+        function calcularDiasRestantes(fecha) {
+            const hoy = new Date();
+            const [año, mes, dia] = fecha.split('-');
+            let fechaPago = new Date(año, mes - 1, dia);
+            if (fechaPago < hoy) {
+                fechaPago.setMonth(fechaPago.getMonth() + 1);
+            }
+            const diferencia = fechaPago - hoy;
+            return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+        }
+
+        function formatearFecha(fecha) {
+            const [año, mes, dia] = fecha.split('-');
+            const date = new Date(año, mes - 1, dia);
+            return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
+        }
+
+        function actualizarTabla() {
+            const pagosOrdenados = estado.suscripciones
+                .map(s => ({
+                    ...s,
+                    diasRestantes: calcularDiasRestantes(s.fecha)
+                }))
+                .sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+            let html = '';
+            if (pagosOrdenados.length === 0) {
+                html = '<tr><td colspan="4" style="text-align: center; color: var(--color-text-muted);">Sin suscripciones registradas</td></tr>';
+            } else {
+                pagosOrdenados.forEach(pago => {
+                    const urgente = pago.diasRestantes <= 3;
+                    const diasClass = urgente ? 'urgent' : (pago.diasRestantes <= 7 ? 'soon' : '');
+                    let diasText = pago.diasRestantes + ' días';
+                    if (pago.diasRestantes === 0) diasText = '¡Hoy!';
+                    else if (pago.diasRestantes === 1) diasText = 'Mañana';
+
+                    html += '<tr><td class="pago-nombre">' + pago.nombre + '</td><td class="pago-monto">$' + pago.monto.toFixed(2) + '</td><td class="pago-fecha">' + formatearFecha(pago.fecha) + '</td><td><span class="pago-dias ' + diasClass + '">' + diasText + '</span></td></tr>';
+                });
+            }
+            document.getElementById('tablaPagosBody').innerHTML = html;
+        }
+
+        function actualizarCalendario() {
+            const primerDia = new Date(añoActual, mesActual, 1).getDay();
+            const diasMes = new Date(añoActual, mesActual + 1, 0).getDate();
+            const diasAnterior = new Date(añoActual, mesActual, 0).getDate();
+
+            // Actualizar encabezado
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('calendarMes').textContent = meses[mesActual] + ' ' + añoActual;
+
+            let html = '';
+
+            // Días del mes anterior
+            for (let i = primerDia - 1; i >= 0; i--) {
+                html += '<div class="calendar-day other-month">' + (diasAnterior - i) + '</div>';
+            }
+
+            // Días del mes actual
+            for (let dia = 1; dia <= diasMes; dia++) {
+                const fechaStr = String(mesActual + 1).padStart(2, '0');
+                const diaStr = String(dia).padStart(2, '0');
+                const fecha = añoActual + '-' + fechaStr + '-' + diaStr;
+                const pagos = estado.suscripciones.filter(s => s.fecha === fecha);
+
+                let clases = 'calendar-day';
+                if (pagos.length > 0) {
+                    clases += ' has-payment';
+                    if (calcularDiasRestantes(fecha) <= 3) {
+                        clases += ' urgent';
+                    }
+                }
+
+                const indicador = pagos.length > 0 ? '<div class="calendar-payment-indicator ' + (calcularDiasRestantes(fecha) <= 3 ? 'urgent' : '') + '"></div>' : '';
+                html += '<div class="' + clases + '">' + dia + indicador + '</div>';
+            }
+
+            // Días del mes siguiente
+            const totalCeldas = Math.ceil((primerDia + diasMes) / 7) * 7;
+            for (let dia = 1; dia <= totalCeldas - primerDia - diasMes; dia++) {
+                html += '<div class="calendar-day other-month">' + dia + '</div>';
+            }
+
+            document.getElementById('calendarDays').innerHTML = html;
+        }
+
+        function mesAnterior() {
+            mesActual--;
+            if (mesActual < 0) {
+                mesActual = 11;
+                añoActual--;
+            }
+            actualizarCalendario();
+        }
+
+        function mesSiguiente() {
+            mesActual++;
+            if (mesActual > 11) {
+                mesActual = 0;
+                añoActual++;
+            }
+            actualizarCalendario();
+        }
+
+        function actualizarUI() {
+            // Saldo
+            document.getElementById('saldoDisplay').textContent = '$' + estado.saldo.toFixed(2);
+
+            // Ingresos
+            const totalIngresos = estado.ingresos.reduce((sum, i) => sum + i.monto, 0);
+            document.getElementById('totalIngresos').textContent = '$' + totalIngresos.toFixed(2);
+            let ingresosHTML = '';
+            estado.ingresos.forEach(ingreso => {
+                ingresosHTML += '<div class="list-item"><span>' + ingreso.tipo + '</span><div><span style="font-weight: 600;">$' + ingreso.monto.toFixed(2) + '</span><button class="danger" onclick="eliminarIngreso(' + ingreso.id + ')" style="margin-left: 10px; padding: 4px 8px; font-size: 0.75rem;">✕</button></div></div>';
+            });
+            document.getElementById('listaIngresos').innerHTML = ingresosHTML || '<p style="color: var(--color-text-muted);">Sin ingresos</p>';
+
+            // Suscripciones
+            const totalSuscripciones = estado.suscripciones.reduce((sum, s) => sum + s.monto, 0);
+            document.getElementById('totalSuscripciones').textContent = '$' + totalSuscripciones.toFixed(2);
+            let suscripcionesHTML = '';
+            estado.suscripciones.forEach(s => {
+                suscripcionesHTML += '<div class="list-item"><span>' + s.nombre + ' <span style="color: var(--color-text-muted); font-size: 0.75rem;">(' + formatearFecha(s.fecha) + ')</span></span><div><span style="font-weight: 600;">$' + s.monto.toFixed(2) + '/mes</span><button class="danger" onclick="eliminarSuscripcion(' + s.id + ')" style="margin-left: 10px; padding: 4px 8px; font-size: 0.75rem;">✕</button></div></div>';
+            });
+            document.getElementById('listaSuscripciones').innerHTML = suscripcionesHTML || '<p style="color: var(--color-text-muted);">Sin suscripciones</p>';
+
+            // Actualizar tabla y calendario
+            actualizarTabla();
+            actualizarCalendario();
+        }
+
+        cargarDatos();
+    </script>
+</body>
+</html>
